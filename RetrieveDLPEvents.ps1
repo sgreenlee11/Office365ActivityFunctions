@@ -60,56 +60,7 @@ $headerParams = @{'Authorization' = "$($oauth.token_type) $($oauth.access_token)
 Write-Host "Retrieving API Content using Key Vault Credential"
 $uri = $QueueItem.ContentURI
 Write-Host "Content URI is $($Uri)"
-$restrequest = Invoke-RestMethod -Headers $headerParams -Uri $uri
-Write-Host "Retrieving $($restrequest.Count) Events for source $($ContentType)"
-$dlpevents = New-Object System.Collections.ArrayList
-foreach ($req in $restrequest) {
-    $dlpevent = New-Object psobject
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "CreationTime" -Value $req.CreationTime
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "Id" -Value $req.id
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "Operation" -Value $req.Operation
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "OrganizationId" -Value $req.OrganizationId
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "RecordType" -Value $req.RecordType
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "UserKey" -Value $req.UserKey
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "UserType" -Value $req.UserType
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "Version" -Value $req.Version
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "WorkLoad" -Value $req.WorkLoad
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "ObjectId" -Value $req.ObjectId
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "UserId" -Value $req.UserId
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "IncidentId" -Value $req.IncidentId
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "SensitiveInfoDetctionIsIncluded" -Value $req.SensitiveInfoDectionIsIncluded
 
-    foreach ($prop in ($req.ExchangeMetaData | Get-Member | ? { $_.membertype -Match "Property" })) {
-        $dlpevent | Add-Member -MemberType NoteProperty -Name $prop.name -Value $req.ExchangeMetaData.$($prop.name)
-    }
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "PolicyId" -Value $req.PolicyDetails.PolicyId
-    $dlpevent | Add-Member -MemberType NoteProperty -Name "PolicyName" -Value $req.PolicyDetails.PolicyName
-    [void]$dlpevents.Add($dlpevent)
+$contentreq = Invoke-WebRequest -Method Get -Headers $headerParams -Uri $uri
 
-<# Reference code for pushing to Azure Table Storage
-    $tablehash.Add("RowKey", ([GUID]::NewGuid()))
-    $tablehash.Add("PartitionKey", $QueueItem.ContentType)
-    $tablehash.Add("CreationTime", $req.CreationTime)
-    $tablehash.Add("Id", $req.Id)
-    $tablehash.Add("Operation", $req.Operation)
-    $tablehash.Add("OrganizationId", $req.OrganizationId)
-    $tablehash.Add("RecordType", $req.RecordType)
-    $tablehash.Add("UserKey", $req.UserKey)
-    $tablehash.Add("UserType", $req.UserType)
-    $tablehash.Add("Version", $req.Version)
-    $tablehash.Add("Workload", $req.Workload)
-    $tablehash.Add("ObjectId", $req.ObjectId)
-    $tablehash.Add("UserId", $req.UserId)
-    $tablehash.Add("IncidentId", $req.IncidentId)
-    $tablehash.Add("SensitiveInfoDectionIsIncluded", $req.SensitiveInfoDectionIsIncluded)
-    foreach ($prop in ($req.ExchangeMetaData | Get-Member | ? { $_.membertype -Match "Property" })) {
-        $tablehash.add($prop.name, $req.ExchangeMetaData.$($prop.name))
-    }
-    $tablehash.Add("PolicyId", $req.PolicyDetails.PolicyId)
-    $tablehash.Add("PolicyName", $req.PolicyDetails.PolicyName)
-    Push-OutputBinding -Name O365AuditData -Value $tablehash
-#>
-}
-
-
-Push-OutputBinding -Name dlpblob -Value ($dlpevents | ConvertTo-Csv)
+Push-OutputBinding -Name dlpblob -Value $contentreq.Content
