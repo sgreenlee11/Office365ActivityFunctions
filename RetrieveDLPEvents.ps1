@@ -22,7 +22,7 @@ param([System.Collections.Hashtable] $QueueItem, $TriggerMetadata)
 Write-Host "PowerShell queue trigger function processed work item: $QueueItem"
 Write-Host "Queue item insertion time: $($TriggerMetadata.InsertionTime)"
 
-Write-Host "Conent URI $($QueueItem.ContentURI)"
+Write-Host "Content URI $($QueueItem.ContentURI)"
 Write-Host "Content Type $($QueueItem.Contenttype)"
 
 #Sign in Parameters - Update with customer specific settings
@@ -59,8 +59,6 @@ $headerParams = @{'Authorization' = "$($oauth.token_type) $($oauth.access_token)
 #Make Content Request
 Write-Host "Retrieving API Content using Key Vault Credential"
 $uri = $QueueItem.ContentURI
-Write-Host "Content URI is $($Uri)"
+$contentreq = Invoke-WebRequest -Method Get -Headers $headerParams -Uri $uri -ContentType application/json
 
-$contentreq = Invoke-WebRequest -Method Get -Headers $headerParams -Uri $uri
-
-Push-OutputBinding -Name dlpblob -Value $contentreq.Content
+Push-OutputBinding -Name outputDLPEventHubMessage -Value $contentreq.Content
