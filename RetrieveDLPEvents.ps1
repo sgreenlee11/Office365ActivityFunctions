@@ -35,6 +35,7 @@ $resource = "https://manage.office.com"
 #Obtain token for key vault
 # Our Key Vault Credential that we want to retreive URI - Update with customer
 $vaultSecretURI = "<Customer Azure Vault Secret URL"
+$vaultSecretURI = $vaultSecretURI + "?api-version=7.0"
 
 #Values for local token service
 
