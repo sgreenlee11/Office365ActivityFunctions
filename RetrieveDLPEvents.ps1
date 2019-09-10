@@ -1,6 +1,7 @@
 <#
     
-    This configuration file provides the settings to be used with the FullExchangeInstallConfig_prod.psd1 DSC configuration.
+    This is a sample Azure Storage Queue Trigger function to retrieve content 
+    blobs from the Office 365 Management and Activity API
 
     The sample scripts are not supported under any Microsoft standard support 
     program or service. The sample scripts are provided AS IS without warranty  
