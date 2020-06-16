@@ -27,31 +27,17 @@ Write-Host "Content URI $($QueueItem.ContentURI)"
 Write-Host "Content Type $($QueueItem.Contenttype)"
 
 #Sign in Parameters - Update with customer specific settings
-$ClientID = "<Customer Client ID>"
+$ClientID = $env:clientId
 $loginURL = "https://login.windows.net"
-$tenantdomain = "<Customer Onmicrosoft.com Domain>"
-$TenantGUID = "<Customer Azure AD Tenant GUID"
+$tenantdomain = "365x002534.onmicrosoft.com"
+$TenantGUID = $env:tenantId
 $resource = "https://manage.office.com"
 
-#Obtain token for key vault
-# Our Key Vault Credential that we want to retreive URI - Update with customer
-$vaultSecretURI = "<Customer Azure Vault Secret URL"
-$vaultSecretURI = $vaultSecretURI + "?api-version=7.0"
-
-#Values for local token service
-
-$apiVersion = "2017-09-01"
-$resourceURI = "https://vault.azure.net"
-$tokenAuthURI = $env:MSI_ENDPOINT + "?resource=$resourceURI&api-version=$apiVersion"
-$tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret"="$env:MSI_SECRET"} -Uri $tokenAuthURI
-
-# Use Key Vault AuthN Token to create Request Header
-$requestHeader = @{ Authorization = "Bearer $($tokenresponse.access_token)" }
-# Call the Vault and Retrieve Creds
-$secret = Invoke-RestMethod -Method GET -Uri $vaultSecretURI -ContentType 'application/json' -Headers $requestHeader
-
+# Use Azure Key Vault reference to retrieve secret
+$secret = $env:appsecret
+Write-Host "Secret is $($secret)"
 # Get an Oauth 2 access token based on client id, secret and tenant domain
-$body = @{grant_type = "client_credentials"; resource = $resource; client_id = $ClientID; client_secret = $secret.value }
+$body = @{grant_type = "client_credentials"; resource = $resource; client_id = $ClientID; client_secret = $secret }
 
 #Request Management and Activity API token and create header
 

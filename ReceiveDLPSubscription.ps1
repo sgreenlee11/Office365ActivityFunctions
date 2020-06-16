@@ -27,12 +27,13 @@ $rawreq = @()
 $rawreq = New-Object -TypeName psobject
 $rawreq | Add-Member -name Content -value Content -membertype noteproperty
 
+
 $requestbody = $request.RawBody | ConvertFrom-Json
 $rawreq.content = $requestbody | convertto-json
 #Legacy code, leaving as informational. Per documentation Next Page URI should not be present on webhook notifications
 
 Write-Host "Next Page Header value is $($Request.Headers.NextPageUri)"
-
+Write-Host $requestbody
 #Activity Feed webhook Body to process
 [array]$contenttype = $requestBody.contenttype
 #$tenantguid = $requestBody.tenantid
@@ -42,11 +43,20 @@ $contentId = $requestBody.contentid
 $contentCreated = $requestBody.contentCreated
 $contentExpiration = $requestBody.contentExpiration
 
+If($requestbody.clientid -eq $null -and $requestbody.validationCode -ne $null)
+{
+    Write-Host "New Subscription request detected"
+    Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = 200
+        Body       = "OK"
+    })
+}
+
 Write-Host "Received Notification for ContentURI $contenturi and Content Type of $contenttype"
 
-#Specify Client ID to match to incoming request
-$ClientID = "<Customer Client ID>"
-$TenantGUID = "<Customer Azure AD Tenant GUID>"
+#Specify Client ID to match to incoming request - Read Client ID and Tenant ID from config
+$ClientID = $env:clientId
+$TenantGUID = $env:tenantId
 
 if ($clientIdIn -eq $ClientId ) {
         $contentcount = 0
@@ -68,5 +78,11 @@ if ($clientIdIn -eq $ClientId ) {
         Body       = "OK"
     })
 }
+else{
+        Push-OutputBinding -Name Response -Value ([HttpResponseContext]@{
+        StatusCode = 500
+        Body       = "Server Error"
+        })
+}
 
- 
+  
